@@ -87,6 +87,15 @@ class DiscourseClient(object):
         """
         return self._delete('/admin/users/{0}.json'.format(userid), **kwargs)
 
+    def all_users(self, filter=None, **kwargs):
+        page = -1
+        while True:
+            page = page + 1
+            users = self.users(filter=filter, page=page, **kwargs)
+            yield users
+            if len(users) <=  0:
+                break
+
     def users(self, filter=None, **kwargs):
         if filter is None:
             filter = 'active'
@@ -154,6 +163,11 @@ class DiscourseClient(object):
         kwargs['post[raw]'] = content
         kwargs['post[edit_reason]'] = edit_reason
         return self._put('/posts/{0}'.format(post_id), **kwargs)
+
+    def change_owner(self, topic_id, post_id, username, **kwargs):
+        kwargs['post_ids[]'] = post_id
+        kwargs['username'] = username
+        return self._post('/t/{0}'.format(topic_id) + '/change-owner', **kwargs)
 
     def topics_by(self, username, **kwargs):
         url = '/topics/created-by/{0}.json'.format(username)
